@@ -21,6 +21,7 @@ The spread of fake news has become a major concern in modern society. This proje
 - Training of multiple classifiers
 - Model comparison and visualization
 - Flask web interface for real-time predictions
+- Analytics dashboard with Chart.js visualizations, summary cards, and model comparison views
 
 ## Technology Stack
 - Python 3.12

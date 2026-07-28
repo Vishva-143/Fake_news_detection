@@ -18,7 +18,7 @@
                         <form method="post">
                             <div class="mb-3">
                                 <label for="article" class="form-label">Article Text</label>
-                                <textarea class="form-control" id="article" name="article" rows="10" placeholder="Enter your article text here..." required></textarea>
+                                <textarea class="form-control" id="article" name="article" rows="10" placeholder="Enter your article text here..." required>{{ article | default('') }}</textarea>
                             </div>
                             <div class="d-grid">
                                 <button type="submit" class="btn btn-primary btn-lg">Predict</button>
@@ -30,9 +30,26 @@
                             {% if result.error %}
                                 <strong>Error:</strong> {{ result.error }}
                             {% else %}
-                                <strong>Prediction:</strong> {{ result.prediction }}<br>
-                                <strong>Confidence:</strong> {{ result.confidence }}<br>
-                                <strong>Model Used:</strong> {{ result.model_used }}
+                                <div class="row g-3 align-items-center">
+                                    <div class="col-lg-7">
+                                        <strong>Prediction:</strong> {{ result.prediction }}<br>
+                                        <strong>Confidence:</strong> {{ result.confidence }}<br>
+                                        <strong>Model Used:</strong> {{ result.model_used }}
+                                        <div class="mt-3">
+                                            <a class="btn btn-outline-primary btn-sm" href="/analytics">Open Analytics Dashboard</a>
+                                        </div>
+                                    </div>
+                                    <div class="col-lg-5">
+                                        <div class="progress mb-2" style="height: 16px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ (result.confidence * 100) | round(0) }}%">{{ (result.confidence * 100) | round(0) }}%</div>
+                                        </div>
+                                        <canvas id="predictionGauge" height="140"></canvas>
+                                    </div>
+                                </div>
+                                <div class="mt-4 p-3 bg-white border rounded">
+                                    <h5 class="mb-2">Submitted News Article</h5>
+                                    <p class="small text-muted mb-0 white-space-pre-wrap">{{ result.article | e }}</p>
+                                </div>
                             {% endif %}
                         </div>
                         {% endif %}
@@ -41,5 +58,18 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+        {% if result and not result.error %}
+        new Chart(document.getElementById('predictionGauge'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Confidence', 'Remaining'],
+                datasets: [{ data: [{{ (result.confidence * 100) | round(0) }}, {{ 100 - (result.confidence * 100) | round(0) }}], backgroundColor: ['#36a2eb', '#e9ecef'] }]
+            },
+            options: { responsive: true, rotation: -90, circumference: 180 }
+        });
+        {% endif %}
+    </script>
 </body>
 </html>

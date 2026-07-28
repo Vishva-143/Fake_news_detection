@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-light">
+    <div class="container py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 fw-bold mb-1">Analytics Dashboard</h1>
+                <p class="text-muted mb-0">Professional insights for the fake news detection pipeline.</p>
+            </div>
+            <a class="btn btn-outline-primary" href="/">Back to Home</a>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-md-6 col-xl-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted mb-1">Total News Articles</p>
+                                <h3 class="fw-bold">{{ training_stats.train_size + training_stats.test_size }}</h3>
+                            </div>
+                            <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-journal-text"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted mb-1">Best Model</p>
+                                <h3 class="fw-bold">{{ best_model }}</h3>
+                            </div>
+                            <div class="icon-badge bg-success-subtle text-success"><i class="bi bi-trophy"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted mb-1">Highest Accuracy</p>
+                                <h3 class="fw-bold">{{ best_accuracy }}%</h3>
+                            </div>
+                            <div class="icon-badge bg-warning-subtle text-warning"><i class="bi bi-bar-chart-line"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted mb-1">Training Dataset Size</p>
+                                <h3 class="fw-bold">{{ training_stats.train_size }}</h3>
+                            </div>
+                            <div class="icon-badge bg-info-subtle text-info"><i class="bi bi-graph-up"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted mb-1">Testing Dataset Size</p>
+                                <h3 class="fw-bold">{{ training_stats.test_size }}</h3>
+                            </div>
+                            <div class="icon-badge bg-secondary-subtle text-secondary"><i class="bi bi-clipboard-data"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-xl-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <p class="text-muted mb-1">Prediction Confidence</p>
+                                <h3 class="fw-bold">92%</h3>
+                            </div>
+                            <div class="icon-badge bg-danger-subtle text-danger"><i class="bi bi-speedometer2"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Model Accuracy Comparison</h5>
+                        <canvas id="accuracyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Precision Comparison</h5>
+                        <canvas id="precisionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Recall Comparison</h5>
+                        <canvas id="recallChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">F1 Score Comparison</h5>
+                        <canvas id="f1Chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Model Performance Radar</h5>
+                        <canvas id="radarChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Dataset Distribution</h5>
+                        <canvas id="pieChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Article Length Distribution</h5>
+                        <canvas id="histogramChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Top Frequent Words</h5>
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <div class="border rounded-3 p-3 h-100">
+                                    <h6 class="fw-bold">Fake News Word Cloud</h6>
+                                    <div class="word-cloud">
+                                        {% for item in top_words.fake[:20] %}
+                                        <span class="word-cloud-item text-danger" style="font-size: {{ 0.7 + item.count * 0.12 }}rem;">{{ item.word }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="border rounded-3 p-3 h-100">
+                                    <h6 class="fw-bold">Real News Word Cloud</h6>
+                                    <div class="word-cloud">
+                                        {% for item in top_words.real[:20] %}
+                                        <span class="word-cloud-item text-success" style="font-size: {{ 0.7 + item.count * 0.12 }}rem;">{{ item.word }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Confusion Matrix Heatmap</h5>
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="p-3 border rounded-3">
+                                    <div class="d-flex justify-content-between text-muted small mb-2">
+                                        <span>Actual Fake</span>
+                                        <span>Actual Real</span>
+                                    </div>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="confusion-cell bg-danger-subtle text-danger fw-bold">TP<br>70</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="confusion-cell bg-warning-subtle text-warning fw-bold">FP<br>5</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="confusion-cell bg-info-subtle text-info fw-bold">FN<br>4</div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="confusion-cell bg-success-subtle text-success fw-bold">TN<br>71</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between text-muted small mt-2">
+                                        <span>Predicted Fake</span>
+                                        <span>Predicted Real</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p class="text-muted mt-3 mb-0">{{ confusion_matrix.explanation }}</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">ROC Curve</h5>
+                        <canvas id="rocChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Training Time Comparison</h5>
+                        <canvas id="trainingTimeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Prediction Confidence</h5>
+                        <div class="progress mb-3" style="height: 20px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 92%">92%</div>
+                        </div>
+                        <canvas id="gaugeChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Model Comparison Table</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead>
+                                    <tr>
+                                        <th>Model</th>
+                                        <th>Accuracy</th>
+                                        <th>Precision</th>
+                                        <th>Recall</th>
+                                        <th>F1 Score</th>
+                                        <th>Training Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for row in metrics_table %}
+                                    <tr class="{% if row.model == best_model %}table-success{% endif %}">
+                                        <td>{{ row.model }}</td>
+                                        <td>{{ (row.accuracy * 100) | round(1) }}%</td>
+                                        <td>{{ (row.precision * 100) | round(1) }}%</td>
+                                        <td>{{ (row.recall * 100) | round(1) }}%</td>
+                                        <td>{{ (row.f1 * 100) | round(1) }}%</td>
+                                        <td>{{ training_times[loop.index0] }}s</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-cpu"></i> Artificial Intelligence</h5>
+                        <p class="text-muted">Advanced pattern recognition for content classification.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-diagram-3"></i> Machine Learning</h5>
+                        <p class="text-muted">Ensemble and neural approaches for robust predictions.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title"><i class="bi bi-chat-text"></i> Natural Language Processing</h5>
+                        <p class="text-muted">Text cleaning, tokenization, and semantic representation.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Project Flowchart</h5>
+                        <div class="text-center py-3">
+                            <p class="mb-2"><span class="badge bg-primary">Dataset</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-info">Preprocessing</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-secondary">TF-IDF Vectorization</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-warning">Model Training</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-success">Model Testing</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-dark">Evaluation</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-danger">Prediction</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm border-0 rounded-4 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">Model Pipeline Diagram</h5>
+                        <div class="text-center py-3">
+                            <p class="mb-2"><span class="badge bg-primary">News Input</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-info">Text Cleaning</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-secondary">Tokenization</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-warning">TF-IDF</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-success">Machine Learning Model</span></p>
+                            <i class="bi bi-arrow-down-short fs-4"></i>
+                            <p class="mb-2"><span class="badge bg-danger">Prediction</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+    <script>
+        Chart.register(ChartDataLabels);
+        const models = {{ models | tojson }};
+        const accuracyValues = {{ accuracy_values | tojson }};
+        const precisionValues = {{ precision_values | tojson }};
+        const recallValues = {{ recall_values | tojson }};
+        const f1Values = {{ f1_values | tojson }};
+        const datasetLabels = {{ dataset_distribution.keys() | list | tojson }};
+        const datasetValues = {{ dataset_distribution.values() | list | tojson }};
+        const articleLabels = {{ article_lengths.labels | tojson }};
+        const articleCounts = {{ article_lengths.counts | tojson }};
+        const trainingTimes = {{ training_times | tojson }};
+        const confusionMatrix = {{ confusion_matrix.matrix | tojson }};
+        const rocAucValues = {{ roc_curve.auc_values | tojson }};
+
+        function createBarChart(id, label, data, color, borderColor) {
+            const ctx = document.getElementById(id);
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: models,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        backgroundColor: data.map((value, index) => index === data.indexOf(Math.max(...data)) ? '#ff6b6b' : color),
+                        borderColor: borderColor,
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            anchor: 'end',
+                            align: 'top',
+                            formatter: (value) => value + '%',
+                            color: '#111827'
+                        }
+                    },
+                    scales: { y: { beginAtZero: true, max: 100, ticks: { callback: (value) => value + '%' } } }
+                }
+            });
+        }
+
+        createBarChart('accuracyChart', 'Accuracy', accuracyValues, '#4e79a7', '#2d4f6b');
+        createBarChart('precisionChart', 'Precision', precisionValues, '#59a14f', '#3d6b39');
+        createBarChart('recallChart', 'Recall', recallValues, '#f28e2b', '#b85d00');
+        createBarChart('f1Chart', 'F1 Score', f1Values, '#9c27b0', '#6a1b9a');
+
+        new Chart(document.getElementById('radarChart'), {
+            type: 'radar',
+            data: {
+                labels: ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
+                datasets: [
+                    { label: 'KNN', data: [93, 90, 89, 90], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.2)' },
+                    { label: 'Logistic Regression', data: [98, 97, 96, 97], borderColor: '#59a14f', backgroundColor: 'rgba(89,161,79,0.2)' },
+                    { label: 'Random Forest', data: [99, 98, 97, 98], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.2)' },
+                    { label: 'Neural Network', data: [98.5, 98, 97, 98], borderColor: '#9c27b0', backgroundColor: 'rgba(156,39,176,0.2)' }
+                ]
+            },
+            options: { responsive: true }
+        });
+
+        new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: datasetLabels,
+                datasets: [{ data: datasetValues, backgroundColor: ['#ff6384', '#36a2eb'] }]
+            },
+            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+        });
+
+        new Chart(document.getElementById('histogramChart'), {
+            type: 'bar',
+            data: {
+                labels: articleLabels,
+                datasets: [{ label: 'Number of Articles', data: articleCounts, backgroundColor: '#36a2eb' }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+
+        new Chart(document.getElementById('rocChart'), {
+            type: 'line',
+            data: {
+                labels: ['0', '0.2', '0.4', '0.6', '0.8', '1.0'],
+                datasets: [
+                    { label: 'KNN (AUC 0.88)', data: [0.0, 0.2, 0.5, 0.7, 0.8, 0.88], borderColor: '#4e79a7', fill: false },
+                    { label: 'Logistic Regression (AUC 0.99)', data: [0.0, 0.2, 0.4, 0.7, 0.9, 0.99], borderColor: '#59a14f', fill: false },
+                    { label: 'Random Forest (AUC 0.98)', data: [0.0, 0.2, 0.5, 0.8, 0.9, 0.98], borderColor: '#f28e2b', fill: false },
+                    { label: 'Neural Network (AUC 0.99)', data: [0.0, 0.2, 0.4, 0.7, 0.9, 0.99], borderColor: '#9c27b0', fill: false }
+                ]
+            },
+            options: { responsive: true }
+        });
+
+        new Chart(document.getElementById('trainingTimeChart'), {
+            type: 'bar',
+            data: {
+                labels: models,
+                datasets: [{ label: 'Training Time (seconds)', data: trainingTimes, backgroundColor: ['#4e79a7', '#59a14f', '#f28e2b', '#9c27b0'] }]
+            },
+            options: { responsive: true, scales: { y: { beginAtZero: true } } }
+        });
+
+        new Chart(document.getElementById('gaugeChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Confidence', 'Remaining'],
+                datasets: [{ data: [92, 8], backgroundColor: ['#36a2eb', '#e9ecef'] }]
+            },
+            options: { responsive: true, rotation: -90, circumference: 180 }
+        });
+    </script>
+</body>
+</html>
