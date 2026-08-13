@@ -25,7 +25,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted mb-1">Total News Articles</p>
-                                <h3 class="fw-bold">{{ training_stats.train_size + training_stats.test_size }}</h3>
+                                <h3 class="fw-bold">1000</h3>
                             </div>
                             <div class="icon-badge bg-primary-subtle text-primary"><i class="bi bi-journal-text"></i></div>
                         </div>
@@ -90,7 +90,7 @@
                         <div class="d-flex justify-content-between align-items-start">
                             <div>
                                 <p class="text-muted mb-1">Prediction Confidence</p>
-                                <h3 class="fw-bold">92%</h3>
+                                <h3 class="fw-bold">{{ prediction_confidence }}%</h3>
                             </div>
                             <div class="icon-badge bg-danger-subtle text-danger"><i class="bi bi-speedometer2"></i></div>
                         </div>
@@ -98,6 +98,10 @@
                 </div>
             </div>
         </div>
+
+        {% if dataset_warning %}
+        <div class="alert alert-warning border-0 rounded-4 shadow-sm mb-4">{{ dataset_warning }}</div>
+        {% endif %}
 
         <div class="row g-4 mb-4">
             <div class="col-lg-6">
@@ -138,62 +142,11 @@
             <div class="col-lg-6">
                 <div class="card shadow-sm border-0 rounded-4 h-100">
                     <div class="card-body">
-                        <h5 class="card-title">Model Performance Radar</h5>
-                        <canvas id="radarChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
-                    <div class="card-body">
                         <h5 class="card-title">Dataset Distribution</h5>
                         <canvas id="pieChart"></canvas>
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="row g-4 mb-4">
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Article Length Distribution</h5>
-                        <canvas id="histogramChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Top Frequent Words</h5>
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <div class="border rounded-3 p-3 h-100">
-                                    <h6 class="fw-bold">Fake News Word Cloud</h6>
-                                    <div class="word-cloud">
-                                        {% for item in top_words.fake[:20] %}
-                                        <span class="word-cloud-item text-danger" style="font-size: {{ 0.7 + item.count * 0.12 }}rem;">{{ item.word }}</span>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="border rounded-3 p-3 h-100">
-                                    <h6 class="fw-bold">Real News Word Cloud</h6>
-                                    <div class="word-cloud">
-                                        {% for item in top_words.real[:20] %}
-                                        <span class="word-cloud-item text-success" style="font-size: {{ 0.7 + item.count * 0.12 }}rem;">{{ item.word }}</span>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4 mb-4">
             <div class="col-lg-6">
                 <div class="card shadow-sm border-0 rounded-4 h-100">
                     <div class="card-body">
@@ -207,16 +160,16 @@
                                     </div>
                                     <div class="row g-2">
                                         <div class="col-6">
-                                            <div class="confusion-cell bg-danger-subtle text-danger fw-bold">TP<br>70</div>
+                                            <div class="confusion-cell bg-danger-subtle text-danger fw-bold">{{ confusion_matrix.matrix[0][0] }}<br>Actual Fake</div>
                                         </div>
                                         <div class="col-6">
-                                            <div class="confusion-cell bg-warning-subtle text-warning fw-bold">FP<br>5</div>
+                                            <div class="confusion-cell bg-warning-subtle text-warning fw-bold">{{ confusion_matrix.matrix[0][1] }}<br>Predicted Real</div>
                                         </div>
                                         <div class="col-6">
-                                            <div class="confusion-cell bg-info-subtle text-info fw-bold">FN<br>4</div>
+                                            <div class="confusion-cell bg-info-subtle text-info fw-bold">{{ confusion_matrix.matrix[1][0] }}<br>Predicted Fake</div>
                                         </div>
                                         <div class="col-6">
-                                            <div class="confusion-cell bg-success-subtle text-success fw-bold">TN<br>71</div>
+                                            <div class="confusion-cell bg-success-subtle text-success fw-bold">{{ confusion_matrix.matrix[1][1] }}<br>Actual Real</div>
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-between text-muted small mt-2">
@@ -230,73 +183,8 @@
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">ROC Curve</h5>
-                        <canvas id="rocChart"></canvas>
-                    </div>
-                </div>
-            </div>
         </div>
 
-        <div class="row g-4 mb-4">
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Training Time Comparison</h5>
-                        <canvas id="trainingTimeChart"></canvas>
-                    </div>
-                </div>
-            </div>
-            <div class="col-lg-6">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Prediction Confidence</h5>
-                        <div class="progress mb-3" style="height: 20px;">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 92%">92%</div>
-                        </div>
-                        <canvas id="gaugeChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="row g-4 mb-4">
-            <div class="col-12">
-                <div class="card shadow-sm border-0 rounded-4 h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">Model Comparison Table</h5>
-                        <div class="table-responsive">
-                            <table class="table table-hover align-middle">
-                                <thead>
-                                    <tr>
-                                        <th>Model</th>
-                                        <th>Accuracy</th>
-                                        <th>Precision</th>
-                                        <th>Recall</th>
-                                        <th>F1 Score</th>
-                                        <th>Training Time</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for row in metrics_table %}
-                                    <tr class="{% if row.model == best_model %}table-success{% endif %}">
-                                        <td>{{ row.model }}</td>
-                                        <td>{{ (row.accuracy * 100) | round(1) }}%</td>
-                                        <td>{{ (row.precision * 100) | round(1) }}%</td>
-                                        <td>{{ (row.recall * 100) | round(1) }}%</td>
-                                        <td>{{ (row.f1 * 100) | round(1) }}%</td>
-                                        <td>{{ training_times[loop.index0] }}s</td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <div class="row g-4 mb-4">
             <div class="col-lg-4">
@@ -385,14 +273,10 @@
         const f1Values = {{ f1_values | tojson }};
         const datasetLabels = {{ dataset_distribution.keys() | list | tojson }};
         const datasetValues = {{ dataset_distribution.values() | list | tojson }};
-        const articleLabels = {{ article_lengths.labels | tojson }};
-        const articleCounts = {{ article_lengths.counts | tojson }};
-        const trainingTimes = {{ training_times | tojson }};
-        const confusionMatrix = {{ confusion_matrix.matrix | tojson }};
-        const rocAucValues = {{ roc_curve.auc_values | tojson }};
 
         function createBarChart(id, label, data, color, borderColor) {
             const ctx = document.getElementById(id);
+            if (!ctx) return;
             new Chart(ctx, {
                 type: 'bar',
                 data: {
@@ -407,6 +291,7 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: false,
                     plugins: {
                         legend: { display: false },
                         datalabels: {
@@ -426,68 +311,13 @@
         createBarChart('recallChart', 'Recall', recallValues, '#f28e2b', '#b85d00');
         createBarChart('f1Chart', 'F1 Score', f1Values, '#9c27b0', '#6a1b9a');
 
-        new Chart(document.getElementById('radarChart'), {
-            type: 'radar',
-            data: {
-                labels: ['Accuracy', 'Precision', 'Recall', 'F1 Score'],
-                datasets: [
-                    { label: 'KNN', data: [93, 90, 89, 90], borderColor: '#4e79a7', backgroundColor: 'rgba(78,121,167,0.2)' },
-                    { label: 'Logistic Regression', data: [98, 97, 96, 97], borderColor: '#59a14f', backgroundColor: 'rgba(89,161,79,0.2)' },
-                    { label: 'Random Forest', data: [99, 98, 97, 98], borderColor: '#f28e2b', backgroundColor: 'rgba(242,142,43,0.2)' },
-                    { label: 'Neural Network', data: [98.5, 98, 97, 98], borderColor: '#9c27b0', backgroundColor: 'rgba(156,39,176,0.2)' }
-                ]
-            },
-            options: { responsive: true }
-        });
-
         new Chart(document.getElementById('pieChart'), {
             type: 'pie',
             data: {
                 labels: datasetLabels,
                 datasets: [{ data: datasetValues, backgroundColor: ['#ff6384', '#36a2eb'] }]
             },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-        });
-
-        new Chart(document.getElementById('histogramChart'), {
-            type: 'bar',
-            data: {
-                labels: articleLabels,
-                datasets: [{ label: 'Number of Articles', data: articleCounts, backgroundColor: '#36a2eb' }]
-            },
-            options: { responsive: true, scales: { y: { beginAtZero: true } } }
-        });
-
-        new Chart(document.getElementById('rocChart'), {
-            type: 'line',
-            data: {
-                labels: ['0', '0.2', '0.4', '0.6', '0.8', '1.0'],
-                datasets: [
-                    { label: 'KNN (AUC 0.88)', data: [0.0, 0.2, 0.5, 0.7, 0.8, 0.88], borderColor: '#4e79a7', fill: false },
-                    { label: 'Logistic Regression (AUC 0.99)', data: [0.0, 0.2, 0.4, 0.7, 0.9, 0.99], borderColor: '#59a14f', fill: false },
-                    { label: 'Random Forest (AUC 0.98)', data: [0.0, 0.2, 0.5, 0.8, 0.9, 0.98], borderColor: '#f28e2b', fill: false },
-                    { label: 'Neural Network (AUC 0.99)', data: [0.0, 0.2, 0.4, 0.7, 0.9, 0.99], borderColor: '#9c27b0', fill: false }
-                ]
-            },
-            options: { responsive: true }
-        });
-
-        new Chart(document.getElementById('trainingTimeChart'), {
-            type: 'bar',
-            data: {
-                labels: models,
-                datasets: [{ label: 'Training Time (seconds)', data: trainingTimes, backgroundColor: ['#4e79a7', '#59a14f', '#f28e2b', '#9c27b0'] }]
-            },
-            options: { responsive: true, scales: { y: { beginAtZero: true } } }
-        });
-
-        new Chart(document.getElementById('gaugeChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Confidence', 'Remaining'],
-                datasets: [{ data: [92, 8], backgroundColor: ['#36a2eb', '#e9ecef'] }]
-            },
-            options: { responsive: true, rotation: -90, circumference: 180 }
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
         });
     </script>
 </body>

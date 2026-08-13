@@ -6,12 +6,7 @@ body {
 .card {
     border: none;
     border-radius: 1rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0.75rem 1.5rem rgba(15, 23, 42, 0.12) !important;
+    box-shadow: 0 0.5rem 1rem rgba(15, 23, 42, 0.06) !important;
 }
 
 textarea {
@@ -27,20 +22,6 @@ textarea {
     font-size: 1.25rem;
 }
 
-.word-cloud {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    min-height: 180px;
-    align-items: center;
-}
-
-.word-cloud-item {
-    display: inline-block;
-    font-weight: 600;
-    padding: 0.2rem 0.45rem;
-}
-
 .confusion-cell {
     min-height: 88px;
     border-radius: 0.75rem;
@@ -49,4 +30,20 @@ textarea {
     text-align: center;
     padding: 0.65rem;
     font-size: 0.95rem;
+}
+
+canvas {
+    max-width: 100%;
+    width: 100%;
+    height: 260px !important;
+}
+
+@media (max-width: 767.98px) {
+    .card-body {
+        padding: 1rem;
+    }
+
+    canvas {
+        height: 220px !important;
+    }
 }

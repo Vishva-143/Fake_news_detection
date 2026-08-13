@@ -2,18 +2,21 @@
 
 from __future__ import annotations
 
-import math
+import pickle
 from collections import Counter
 from pathlib import Path
 from typing import Any
 
 import pandas as pd
+from sklearn.metrics import confusion_matrix
 
-from preprocessing.preprocessing import load_dataset
+from preprocessing.preprocessing import build_vectorizer, load_dataset, prepare_datasets, transform_features
 
 BASE_DIR = Path(__file__).resolve().parents[1]
 DATASET_DIR = BASE_DIR / "dataset"
 METRICS_FILE = BASE_DIR / "metrics.csv"
+MODEL_PATH = BASE_DIR / "saved_models" / "logistic.pkl"
+VECTORIZER_PATH = BASE_DIR / "saved_models" / "vectorizer.pkl"
 
 
 def load_metric_rows_from_csv(metrics_path: str | Path | None = None) -> dict[str, dict[str, float]]:
@@ -95,6 +98,29 @@ def get_top_words(limit: int = 20) -> dict[str, list[dict[str, Any]]]:
     }
 
 
+def get_prediction_confidence() -> float:
+    """Compute the average confidence from the saved model on the test set."""
+    if not MODEL_PATH.exists() or not VECTORIZER_PATH.exists():
+        return 0.0
+
+    try:
+        with MODEL_PATH.open("rb") as handle:
+            model = pickle.load(handle)
+        with VECTORIZER_PATH.open("rb") as handle:
+            vectorizer = pickle.load(handle)
+
+        train_df, test_df = load_dataset()
+        X_train, X_test, y_train, y_test = prepare_datasets(train_df, test_df)
+        X_train_features, X_test_features = transform_features(vectorizer, X_train, X_test)
+        if hasattr(model, "predict_proba"):
+            probabilities = model.predict_proba(X_test_features)
+            if probabilities.ndim > 1 and probabilities.shape[1] > 1:
+                return round(float(probabilities.max(axis=1).mean() * 100), 1)
+    except Exception:
+        return 0.0
+    return 0.0
+
+
 def get_dashboard_payload() -> dict[str, Any]:
     """Build the payload consumed by the dashboard template."""
     metric_rows = load_metric_rows_from_csv()
@@ -118,8 +144,26 @@ def get_dashboard_payload() -> dict[str, Any]:
 
     model_names = metrics_df["model"].tolist()
     training_stats = get_training_stats()
-    article_lengths = get_article_length_distribution()
-    top_words = get_top_words()
+    total_records = training_stats["train_size"] + training_stats["test_size"]
+    dataset_warning = ""
+    if total_records < 50:
+        dataset_warning = "Warning: The current dataset is too small for reliable real-world evaluation."
+
+    confusion_matrix_values = [[0, 0], [0, 0]]
+    try:
+        train_df, test_df = load_dataset()
+        X_train, X_test, y_train, y_test = prepare_datasets(train_df, test_df)
+        if MODEL_PATH.exists() and VECTORIZER_PATH.exists():
+            with MODEL_PATH.open("rb") as handle:
+                model = pickle.load(handle)
+            with VECTORIZER_PATH.open("rb") as handle:
+                vectorizer = pickle.load(handle)
+            _, X_test_features = transform_features(vectorizer, X_train, X_test)
+            predictions = model.predict(X_test_features)
+            confusion_matrix_values = confusion_matrix(y_test, predictions, labels=[0, 1]).tolist()
+    except Exception:
+        confusion_matrix_values = [[0, 0], [0, 0]]
+
     return {
         "models": model_names,
         "accuracy_values": accuracy_values,
@@ -129,19 +173,14 @@ def get_dashboard_payload() -> dict[str, Any]:
         "metrics_table": metrics_df.to_dict(orient="records"),
         "best_model": best_model,
         "best_accuracy": round(float(best_accuracy) * 100, 1),
+        "prediction_confidence": get_prediction_confidence(),
         "training_stats": training_stats,
-        "article_lengths": article_lengths,
-        "top_words": top_words,
         "dataset_distribution": training_stats["dataset_distribution"],
         "dataset_percentages": training_stats["dataset_percentages"],
+        "dataset_warning": dataset_warning,
         "confusion_matrix": {
             "labels": ["Predicted Fake", "Predicted Real"],
-            "matrix": [[70, 5], [4, 71]],
-            "explanation": "The best model shows strong performance with few false positives and false negatives.",
+            "matrix": confusion_matrix_values,
+            "explanation": "Confusion matrix based on the model's actual predictions on the test set.",
         },
-        "roc_curve": {
-            "labels": ["KNN", "Logistic Regression", "Random Forest", "Neural Network"],
-            "auc_values": [0.88, 0.99, 0.98, 0.99],
-        },
-        "training_times": [2.5, 1.4, 3.1, 2.2],
     }
